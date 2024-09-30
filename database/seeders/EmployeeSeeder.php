@@ -24,7 +24,7 @@ class EmployeeSeeder extends Seeder
             'gender' => 'Male',
             'role' => 'Administrator',
             'username' => 'johndoe',
-            'password' => 'password', // Use bcrypt to hash the password
+            'password' => bcrypt('password'), // Use bcrypt to hash the password
             'status' => 'active',
             'avatar' => null, // You can specify an avatar file path or leave it null
         ]);
