@@ -39,7 +39,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if ($employees)
+                                @if ($employees != null)
 
                                     @foreach ($employees as $e)
                                         <tr>
