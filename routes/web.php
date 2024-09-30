@@ -12,7 +12,9 @@ Route::get('/login', [POSController::class, 'index'])->name('login'); // Login v
 Route::post('/login', [POSController::class, 'login']); // Login POST route
 Route::post('/logout', [POSController::class, 'logout'])->name('logout'); // Logout route
 
-
+Route::get('/user', [POSController::class, 'user'])->name('user');
+Route::get('/user_account', [POSController::class, 'userInformation'])->name('user_account');
+Route::post('/upload-avatar', [AvatarController::class, 'upload'])->name('upload.avatar');
 // Protected routes (requires authentication)
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [POSController::class, 'dashboard'])->name('dashboard');
@@ -23,9 +25,6 @@ Route::middleware('auth')->group(function () {
 
     // User management
 
-    Route::get('/user', [POSController::class, 'user'])->name('user');
-    Route::get('/user_account', [POSController::class, 'userInformation'])->name('user_account');
-    Route::post('/upload-avatar', [AvatarController::class, 'upload'])->name('upload.avatar');
 
 
     // Supplier information
