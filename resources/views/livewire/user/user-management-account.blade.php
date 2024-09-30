@@ -39,16 +39,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if ($employees != null)
 
                                     @foreach ($employees as $e)
                                         <tr>
                                             <td class="text-center"> <a href="javascript:void(0);" class="product-img">
 
-
-                                                    <img src="{{ auth()->user()->avatar ? asset('assets/img/avatars/' . $e->avatar) : asset('assets/img/avatars/1.png') }}"
-                                                        alt="User Avatar" class="rounded-circle custom-avatar-size" />
-                                                </a></td>
+                                                <img src="{{ auth()->check() && auth()->user()->avatar ? asset('assets/img/avatars/' . auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}"
+                                                alt="User Avatar" class="rounded-circle custom-avatar-size" />
+                                            </td>
                                             <td class="productimgname">
                                                 <a
                                                     href="javascript:void(0);">{{ $e->firstname . ' ' . $e->lastname }}</a>
@@ -91,7 +89,7 @@
                                             </td>
                                         </tr>
                                     @endforeach
-                                @endif
+
                             </tbody>
                         </table>
                     </div>
