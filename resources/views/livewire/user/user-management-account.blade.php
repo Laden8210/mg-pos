@@ -14,7 +14,8 @@
                             </div>
                             <div class="search-input">
 
-                                <input type="text" class="form-control" placeholder="Search" wire:model.live.debounce.300ms = "search">
+                                <input type="text" class="form-control" placeholder="Search"
+                                    wire:model.live.debounce.300ms = "search">
                             </div>
                         </div>
                         <div>
@@ -38,58 +39,58 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if($employee)
+                                @if ($employees)
 
-                                @foreach ($employees as $e)
-                                    <tr>
-                                        <td class="text-center"> <a href="javascript:void(0);" class="product-img">
+                                    @foreach ($employees as $e)
+                                        <tr>
+                                            <td class="text-center"> <a href="javascript:void(0);" class="product-img">
 
 
-                                            <img src="{{ auth()->user()->avatar ? asset('assets/img/avatars/' . $e->avatar) : asset('assets/img/avatars/1.png') }}"
-                                            alt="User Avatar"
-                                            class="rounded-circle custom-avatar-size" />
-                                        </a></td>
-                                        <td class="productimgname">
-                                            <a href="javascript:void(0);">{{ $e->firstname . ' ' . $e->lastname }}</a>
-                                        </td>
-                                        <td class="text-center">{{ $e->username }}</td>
-                                        <td class="text-center">{{ $e->contact_number }}</td>
-                                        <td class="text-center">{{ date('Y-m-d', strtotime($e->created_at)) }}</td>
-                                        <td class="text-center">
-                                            @php
-                                                $e->role = strtolower($e->role);
-                                            @endphp
-                                            @if ($e->role == 'cashier')
-                                                <span class="badges bg-info">Cashier</span>
-                                            @endif
-                                            @if ($e->role == 'manager')
-                                                <span class="badges bg-lightyellow">Manager</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            @php
+                                                    <img src="{{ auth()->user()->avatar ? asset('assets/img/avatars/' . $e->avatar) : asset('assets/img/avatars/1.png') }}"
+                                                        alt="User Avatar" class="rounded-circle custom-avatar-size" />
+                                                </a></td>
+                                            <td class="productimgname">
+                                                <a
+                                                    href="javascript:void(0);">{{ $e->firstname . ' ' . $e->lastname }}</a>
+                                            </td>
+                                            <td class="text-center">{{ $e->username }}</td>
+                                            <td class="text-center">{{ $e->contact_number }}</td>
+                                            <td class="text-center">{{ date('Y-m-d', strtotime($e->created_at)) }}</td>
+                                            <td class="text-center">
+                                                @php
+                                                    $e->role = strtolower($e->role);
+                                                @endphp
+                                                @if ($e->role == 'cashier')
+                                                    <span class="badges bg-info">Cashier</span>
+                                                @endif
+                                                @if ($e->role == 'manager')
+                                                    <span class="badges bg-lightyellow">Manager</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                @php
 
-                                                $e->status = strtolower($e->status);
-                                            @endphp
-                                            @if ($e->status == 'active')
-                                                <span class="badges bg-lightgreen">Active</span>
-                                            @endif
+                                                    $e->status = strtolower($e->status);
+                                                @endphp
+                                                @if ($e->status == 'active')
+                                                    <span class="badges bg-lightgreen">Active</span>
+                                                @endif
 
-                                            @if ($e->status == 'inactive')
-                                                <span class="badges bg-lightred">Inactive</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
+                                                @if ($e->status == 'inactive')
+                                                    <span class="badges bg-lightred">Inactive</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
 
-                                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                data-bs-target="#update-user"
-                                                wire:click="editUser({{ $e->employee_id }})" type="button">
-                                                <i class="fa fa-edit" aria-hidden="true"></i>
-                                            </button>
+                                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                    data-bs-target="#update-user"
+                                                    wire:click="editUser({{ $e->employee_id }})" type="button">
+                                                    <i class="fa fa-edit" aria-hidden="true"></i>
+                                                </button>
 
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 @endif
                             </tbody>
                         </table>
