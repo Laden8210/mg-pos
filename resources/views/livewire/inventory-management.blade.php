@@ -39,7 +39,7 @@
                     <div class="table-responsive">
                         <table class="table datanew">
                             <thead>
-
+                                <th class="text-center">Batch</th>
                                 <th class="text-center">Item Name</th>
                                 <th class="text-center">Company Name</th>
                                 <th class="text-center">Description</th>
@@ -53,7 +53,7 @@
                             <tbody>
                                 @forelse ($inventories as $inventory)
                                     <tr>
-
+                                        <td>{{ $inventory->batch }}</td>
 
                                         <td class="text-center">
                                             {{ $inventory->item ? $inventory->item->itemName : 'N/A' }}
@@ -231,13 +231,13 @@
 
                         <div class="container-fluid">
                             <div class="form-group w-25 d-flex">
-                                <select name="" id="" class="form-select "
+                                <select name="selectedItem" id="" class="form-select "
                                     wire:model.live="selectedItem">
 
                                     <option value="">Select Item</option>
                                     @foreach ($inventories as $inventory)
-                                        <option value="{{ $inventory->itemID }}">
-                                            {{ $inventory->item->itemName }}
+                                        <option value="{{ $inventory->inventoryId }}">
+                                            {{ $inventory->batch  }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -245,118 +245,55 @@
 
                             </div>
 
-                            {{--
-                            @if ($stockCardInventories)
-                                @foreach ($stockCardInventories as $inventory)
-                                    <div class="row mb-3">
-                                        <div class="col-md-2">
-                                            <label for="itemId-{{ $inventory->inventoryId }}" class="form-label">Item
-                                                ID</label>
-                                            <input type="text" class="form-control"
-                                                id="itemId-{{ $inventory->inventoryId }}"
-                                                value="{{ $inventory->itemID }}" readonly>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label for="itemName-{{ $inventory->inventoryId }}"
-                                                class="form-label">Item Name</label>
-                                            <input type="text" class="form-control"
-                                                id="itemName-{{ $inventory->inventoryId }}"
-                                                value="{{ $inventory->item->itemName ?? 'N/A' }}" readonly>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label for="CompanyName-{{ $inventory->inventoryId }}"
-                                                class="form-label">Company
-                                                Name</label>
-                                            <input type="text" class="form-control"
-                                                id="CompanyName-{{ $inventory->CompanyName }}"
-                                                value="{{ $inventory->SupplierId }}" readonly>
-
-                                        </div>
-                                    </div>
-                                    <div class="row mb-4">
-                                        <div class="col-md-3">
-                                            <label for="barcode-{{ $inventory->inventoryId }}"
-                                                class="form-label">Barcode</label>
-                                            <input type="text" class="form-control"
-                                                id="barcode-{{ $inventory->inventoryId }}"
-                                                value="{{ $inventory->item->barcode ?? 'N/A' }}" readonly>
-                                        </div>
-
-                                        <div class="col-md-3">
-                                            <label for="Contact Person-{{ $inventory->inventoryId }}"
-                                                class="form-label">ContactPerson</label>
-                                            <input type="text" class="form-control"
-                                                id="ContactPerson-{{ $inventory->inventoryId }}"
-                                                value="{{ $inventory->supplierItemID->ContactPerson ?? 'N/A' }}"
-                                                readonly>
-                                        </div>
-
-                                        <div class="col-md-3">
-                                            <label for="Contact Number-{{ $inventory->inventoryId }}"
-                                                class="form-label">ContactNumber</label>
-                                            <input type="text" class="form-control"
-                                                id="ContactNumber-{{ $inventory->inventoryId }}"
-                                                value="{{ $inventory->ContactNumber ?? 'N/A' }}" readonly>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @else
-                            @endif --}}
-
-                            <!-- Inventory Movement Table -->
                             <div class="table-responsive">
 
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>Batch</th>
-                                            <th>Barcode</th>
+                                            <th>Item Name</th>
+
                                             <th>Date</th>
                                             <th>Quantity In</th>
                                             <th>Value In</th>
                                             <th>Quantity Out</th>
                                             <th>Value Out</th>
-                                            <th>Expiration Date</th>
+                                            <th>Remarks</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($stockCardInventories as $stockCard)
-                                            @php
-                                                // Initialize quantities
-                                                $valueIn = 0;
-                                                $valueOut = 0;
-                                                $totalQuantityIn = 0;
-                                                $totalQuantityOut = 0;
+                                        @if ($stockCardInventories)
+                                            @foreach ($stockCardInventories as $stockCard)
+                                                @php
+                                                    // Initialize quantities
+                                                    $valueIn = 0;
+                                                    $valueOut = 0;
+                                                    $totalQuantityIn = 0;
+                                                    $totalQuantityOut = 0;
 
-                                                // Filter stock by the current stock card's inventoryId
-$filteredStock = $stock->where('inventoryId', $stockCard->inventoryId);
+                                                    if ($stockCard->Remarks === 'Received') {
+                                                        $totalQuantityIn += $stockCard->Quantity;
+                                                        $valueIn += $stockCard->Quantity * $stockCard->item->unitPrice;
+                                                    } else {
+                                                        $totalQuantityOut += $stockCard->Quantity;
+                                                        $valueOut += $stockCard->Quantity * $stockCard->item->sellingPrice;
+                                                    }
 
-// Calculate total Quantity In (assuming 'Remarks' is 'In' for incoming stock)
-$totalQuantityIn = $filteredStock
-    ->where('Remarks', 'Received')
-    ->sum('Quantity');
+                                                @endphp
+                                                <tr>
+                                                    {{-- <td>{{ $stockCard->inventory->batch }}</td> --}}
+                                                    <td>{{ $stockCard->item->itemName }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($stockCard->date_received)->format('m/d/Y') }}
+                                                    </td>
+                                                    <td>{{ $totalQuantityIn }}</td>
+                                                    <td>₱ {{ $valueIn }}</td>
+                                                    <td>{{ $totalQuantityOut }}</td>
+                                                    <td>₱ {{ $valueOut }}</td>
 
-// Calculate total Quantity Out (assuming 'Remarks' is 'Out' for outgoing stock)
-$totalQuantityOut = $filteredStock
-    ->where('Remarks', 'Send')
-    ->sum('Quantity');
+                                                    <td>{{ $stockCard->Remarks }}</td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
 
-// Calculate the corresponding values if needed (assuming Value corresponds to Quantity)
-$valueIn = $filteredStock->where('Remarks', 'Received')->sum('Value'); // Adjust if Value calculation differs
-$valueOut = $filteredStock->where('Remarks', 'Send')->sum('Value'); // Adjust if Value calculation differs
-                                            @endphp
-                                            <tr>
-                                                <td>{{ $stockCard->batch }}</td>
-                                                <td>{{ $stockCard->item->barcode }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($stockCard->date_received)->format('m/d/Y') }}
-                                                </td>
-                                                <td>{{ $totalQuantityIn }}</td>
-                                                <td>₱ {{ $valueIn }}</td>
-                                                <td>{{ $totalQuantityOut }}</td>
-                                                <td>₱ {{ $valueOut }}</td>
-                                                <td>{{ $stockCard->expiry_date }}</td>
-                                            </tr>
-                                        @endforeach
 
                                     </tbody>
                                 </table>
@@ -373,28 +310,28 @@ $valueOut = $filteredStock->where('Remarks', 'Send')->sum('Value'); // Adjust if
         </div>
     @endif
     @if (session()->has('message-status'))
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <i class="fas fa-info-circle me-2" style="font-size: 1.5rem;"></i>
-                <strong class="me-auto">Order Status</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                {{ session('message-status') }}
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <i class="fas fa-info-circle me-2" style="font-size: 1.5rem;"></i>
+                    <strong class="me-auto">Order Status</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{ session('message-status') }}
+                </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        // Auto-hide the toast after 2 seconds
-        var toastElement = document.querySelector('.toast');
-        var toast = new bootstrap.Toast(toastElement); // Initialize Bootstrap toast
-        setTimeout(function() {
-            toast.hide(); // Use Bootstrap method to hide the toast
-        }, 2000);
-    </script>
-@endif
+        <script>
+            // Auto-hide the toast after 2 seconds
+            var toastElement = document.querySelector('.toast');
+            var toast = new bootstrap.Toast(toastElement); // Initialize Bootstrap toast
+            setTimeout(function() {
+                toast.hide(); // Use Bootstrap method to hide the toast
+            }, 2000);
+        </script>
+    @endif
 
 
 </div>

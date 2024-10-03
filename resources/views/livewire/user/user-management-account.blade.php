@@ -28,7 +28,7 @@
                         <table class="table datanew">
                             <thead>
                                 <tr>
-                                    <th class="text-center">Avatar</th>
+
                                     <th class="text-center">Full Name</th>
                                     <th class="text-center">Username</th>
                                     <th class="text-center">Contact No.</th>
@@ -42,11 +42,7 @@
 
                                     @foreach ($employees as $e)
                                         <tr>
-                                            <td class="text-center"> <a href="javascript:void(0);" class="product-img">
 
-                                                <img src="{{ auth()->check() && auth()->user()->avatar ? asset('assets/img/avatars/' . auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}"
-                                                alt="User Avatar" class="rounded-circle custom-avatar-size" />
-                                            </td>
                                             <td class="productimgname">
                                                 <a
                                                     href="javascript:void(0);">{{ $e->firstname . ' ' . $e->lastname }}</a>

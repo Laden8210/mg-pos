@@ -17,41 +17,41 @@ class InventoryManagement extends Component
     public $search;
     public $selectedInventory;
     public $selectedItem = "";
-
     public $stockCardInventories;
     public $showStockCardModal = false;
-
     public $selectedItemAdjustment;
     public $quantity;
     public $remarks;
-
     public $adjustInventory = false;
+
     public function mount()
     {
         $this->search = '';
         $this->selectedInventory = null;
     }
+
+    public function updatedSelectedItem($value)
+    {
+        // This method will be called whenever selectedItem changes
+        $this->stockCardInventories = StockCard::where('inventoryId', $value)->with('item')->get();
+
+
+    }
+
     public function render()
     {
         $supplies = PurchaseOrder::all();
         $supplier = Supplier::all();
 
         // Load related models with `with()`, aggregate fields with `selectRaw()`
-        $inventories = Inventory::with(['item', 'purchaseItems', 'purchaseOrders', 'supplierItem', 'supplier',]) // Load relationships
-            ->selectRaw('itemID,SUM(qtyonhand) as total_qtyonhand, SUM(original_quantity) as total_original_quantity, SupplierId') // Aggregate inventory fields
+        $inventories = Inventory::with(['item', 'purchaseItems', 'purchaseOrders', 'supplierItem', 'supplier']) // Load relationships
+            ->selectRaw('inventoryId, batch, itemID, qtyonhand as total_qtyonhand, original_quantity as total_original_quantity, SupplierId') // Aggregate inventory fields
             ->when($this->search, function ($query) {
                 $query->whereHas('purchaseOrders', function ($query) {
                     $query->where('SupplierName', 'like', '%' . $this->search . '%');
                 });
             })
-            ->groupBy('itemID', 'SupplierId') // Group by item and supplier
             ->paginate(10);
-
-
-
-        $this->stockCardInventories = Inventory::with(['item', 'purchaseItems.purchaseOrders.supplier'])
-            ->where('itemID', $this->selectedItem)
-            ->get();
 
         foreach ($inventories as $inventory) {
             $this->checkReorderPoint($inventory); // Process reorder point check
@@ -62,11 +62,17 @@ class InventoryManagement extends Component
             'supplies' => $supplies, // Pass supplier data
             'supplier' => $supplier, // Pass supplier data
             'stockCardInventories' => $this->stockCardInventories, // Pass stock card inventories
-
-            'stock' => StockCard::all()
         ]);
     }
 
+
+
+    public function updated($propertyName)
+    {
+        if (in_array($propertyName, ['barcode'])) {
+            $this->scanProduct();
+        }
+    }
 
 
     public function checkReorderPoint($inventory)

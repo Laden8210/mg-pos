@@ -19,10 +19,17 @@ class SaleTransaction extends Component
     public $searchTerm = '';
     public $searchResults = [];
     public $selectedItems = [];
-    
+
     public $inventoryDetails = [];
     public $showInventory = false;
 
+    public $barcode;
+
+    public $oldBarcode;
+
+    public $selectedItem;
+
+    public $itemQuantity = 0;
     public function mount()
     {
         $this->items = Item::all();
@@ -42,10 +49,73 @@ class SaleTransaction extends Component
         }
     }
 
+
+
+    public function updated($propertyName)
+    {
+        if (in_array($propertyName, ['barcode'])) {
+            $this->scanProduct();
+        }
+    }
+
+    public function scanProduct()
+    {
+        $item = Inventory::with('item')
+            ->when($this->barcode, function ($query) {
+                $query->whereHas('item', function ($q) {
+                    $q->where('barcode', $this->barcode);
+                });
+            })->first();
+
+        $this->oldBarcode = $this->barcode;
+
+        if (!$item) {
+            session()->flash('error', 'Item not found.');
+
+
+            return;
+        }
+
+        if ($item->qtyonhand <= 0) {
+            session()->flash('error', 'Item is out of stock.');
+            $this->barcode = "";
+
+            return;
+        }
+
+        // Check if item is already in the cart
+        if (isset($this->cart[$item->itemId])) {
+            if ($this->cart[$item->itemId]['quantity'] < $item->qtyonhand) {
+                $this->cart[$item->itemId]['quantity']++;
+                $this->cart[$item->itemId]['subtotal'] = $this->cart[$item->itemId]['quantity'] * $this->cart[$item->itemId]['price'];
+            } else {
+                session()->flash('error', 'Not enough stock available.');
+                $this->barcode = "";
+
+                return;
+            }
+        } else {
+            // Add new item to cart
+            $this->cart[$item->itemId] = [
+                'id' => $item->itemID,
+                'name' => $item->item->itemName,
+                'price' => $item->item->unitPrice,
+                'quantity' => 1,
+                'subtotal' => $item->item->unitPrice,
+            ];
+        }
+
+        // Clear the barcode input field
+        $this->barcode = "";
+
+        // Recalculate totals for the cart
+        $this->calculateTotals();
+    }
+
     public function addToCart($itemId)
     {
         $item = Inventory::with('item')->find($itemId);
-        
+
         if (!$item) {
             session()->flash('error', 'Item not found.');
             return;
@@ -83,11 +153,75 @@ class SaleTransaction extends Component
 
     public function removeFromCart($itemId)
     {
-        if (isset($this->cart[$itemId])) {
-            unset($this->cart[$itemId]);
-            $this->calculateTotals();
+        foreach ($this->cart as $key => $item) {
+            if ($item['id'] == $itemId) {
+                unset($this->cart[$key]);
+                break;
+            }
+        }
+
+
+        $this->cart = array_values($this->cart);
+
+        $this->calculateTotals();
+    }
+
+
+    public function selectItemToCartFuck($itemId)
+    {
+
+        foreach ($this->cart as $key => $item) {
+            if ($item['id'] == $itemId) {
+                $this->selectedItem = $item;
+                $this->itemQuantity = $item['quantity'];
+
+                break;
+            }
         }
     }
+
+
+    public function updateQuantityItemCart()
+    {
+        foreach ($this->cart as $key => $cartItem) {
+            if ($cartItem['id'] == $this->selectedItem['id']) {
+
+                $inventoryItem = Inventory::with('item')
+                    ->where('itemID', $this->selectedItem['id'])
+                    ->first();
+
+                if (!$inventoryItem) {
+                    session()->flash('error', 'Item not found in inventory.');
+                    return;
+                }
+
+
+                if ($this->itemQuantity <= $inventoryItem->qtyonhand) {
+
+                    $this->cart[$key]['quantity'] = $this->itemQuantity;
+
+
+                    $this->cart[$key]['subtotal'] = $this->cart[$key]['quantity'] * $this->cart[$key]['price'];
+
+
+                    $this->calculateTotals();
+
+
+                    session()->flash('message', 'Quantity updated successfully.');
+                } else {
+
+                    session()->flash('error', 'Not enough stock available.');
+                }
+
+                break;
+            }
+        }
+    }
+
+
+
+
+
 
     public function updateQuantity($itemId, $quantity)
     {
