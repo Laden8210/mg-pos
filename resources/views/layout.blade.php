@@ -109,13 +109,7 @@
 
                   </li>
 
-                  <!-- Activity Log -->
-                  <li class="menu-item">
-                      <a href="/activity_log" class="menu-link" data-url="/activity_log">
-                          <i class="menu-icon tf-icons bx bx-history"></i>
-                          <div data-i18n="Activity Log">Activity Log</div>
-                      </a>
-                  </li>
+
 
                   <!-- User Management -->
                   <li class="menu-item">
