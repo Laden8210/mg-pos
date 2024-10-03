@@ -8,7 +8,7 @@
                     <h3>Cart</h3>
 
                     <div class="w-25 my-2">
-                        <input type="text" autofocus id="barcode" placeholder="Scan here" wire:model.live="barcode"
+                        <input type="text" autofocus id="barcode" placeholder="Scan here" wire:model.live.debounce.1000ms="barcode"
                             class="form-control">
                     </div>
 
