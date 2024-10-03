@@ -60,6 +60,8 @@ class SaleTransaction extends Component
 
     public function scanProduct()
     {
+
+        sleep(2);
         $item = Inventory::with('item')
             ->when($this->barcode, function ($query) {
                 $query->whereHas('item', function ($q) {
