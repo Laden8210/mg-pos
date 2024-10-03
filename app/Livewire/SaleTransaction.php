@@ -61,7 +61,7 @@ class SaleTransaction extends Component
     public function scanProduct()
     {
 
-        sleep(2);
+
         $item = Inventory::with('item')
             ->when($this->barcode, function ($query) {
                 $query->whereHas('item', function ($q) {
@@ -73,6 +73,7 @@ class SaleTransaction extends Component
 
         if (!$item) {
             session()->flash('error', 'Item not found.');
+            sleep(1);
             $this->barcode = "";
 
             return;
