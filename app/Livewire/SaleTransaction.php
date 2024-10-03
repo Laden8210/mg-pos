@@ -73,7 +73,7 @@ class SaleTransaction extends Component
 
         if (!$item) {
             session()->flash('error', 'Item not found.');
-
+            $this->barcode = "";
 
             return;
         }
