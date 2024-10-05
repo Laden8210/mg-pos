@@ -9,10 +9,12 @@ use App\Models\Inventory;
 class SaleTransaction extends Component
 {
     public $items = [];
+    public $transactionNumber = 1;
     public $cart = [];
     public $subtotal = 0;
     public $total = 0;
     public $discount = 0;
+    public $discountPercentage = 0;
     public $amountTendered = 0;
     public $change = 0;
 
@@ -30,10 +32,12 @@ class SaleTransaction extends Component
     public $selectedItem;
 
     public $itemQuantity = 0;
+
     public function mount()
     {
         $this->items = Item::all();
         $this->fetchAllInventory();
+        $this->restoreInventory();
     }
 
     public function fetchAllInventory()
@@ -60,7 +64,6 @@ class SaleTransaction extends Component
 
     public function scanProduct()
     {
-
 
         $item = Inventory::with('item')
             ->when($this->barcode, function ($query) {
@@ -148,10 +151,11 @@ class SaleTransaction extends Component
         }
 
         // Update inventory quantity
-        $item->qtyonhand--;
+
         $item->save();
 
         $this->calculateTotals();
+        $this->updateCartSubtotal();
     }
 
     public function removeFromCart($itemId)
@@ -169,8 +173,92 @@ class SaleTransaction extends Component
         $this->calculateTotals();
     }
 
+    public $temporaryInventoryDepletion = [];
 
-    public function selectItemToCartFuck($itemId)
+    public function preparePrint()
+    {
+        // Encode the cart items to JSON
+        $cartItems = urlencode(json_encode($this->cart));
+
+        // Deplete inventory for items in the cart
+        foreach ($this->cart as $cartItem) {
+            $item = Inventory::where('itemID', $cartItem['id'])->first();
+            if ($item) {
+                // Decrease the quantity
+                $item->qtyonhand -= $cartItem['quantity'];
+                $item->save();
+
+                // Store the change for potential restoration
+                $this->temporaryInventoryDepletion[$item->itemID] = $cartItem['quantity'];
+            }
+        }
+
+        $this->storeTransaction();
+
+        // Redirect to the print-receipt route with encoded parameters
+        return redirect()->route('print-reciept', [
+            'items' => $cartItems,  // Encoded JSON string for the items
+            'subtotal' => $this->subtotal,
+            'total' => $this->total,
+            'discount' => $this->discount ?? 0,
+            'amountTendered' => $this->amountTendered,
+            'change' => $this->change,
+            $this->resetTransaction()
+        ]);
+
+    }
+    protected function storeTransaction()
+    {
+        // Save the transaction details to the database
+        Transaction::create([
+            'transaction_number' => $this->transactionNumber,
+            'items' => json_encode($this->cart), // You can customize this as needed
+            'subtotal' => $this->subtotal,
+            'total' => $this->total,
+            'discount' => $this->discount,
+            'amount_tendered' => $this->amountTendered,
+            'change' => $this->change,
+        ]);
+
+        // Increment the transaction number for the next transaction
+        $this->transactionNumber++;
+        $this->resetTransaction();
+    }
+
+    public function restoreInventory()
+    {
+        foreach ($this->temporaryInventoryDepletion as $itemId => $quantity) {
+            $item = Inventory::where('itemID', $itemId)->first();
+            if ($item) {
+                // Restore the quantity
+                $item->qtyonhand += $quantity;
+                $item->save();
+            }
+        }
+
+        // Clear the temporary inventory depletion tracking
+        $this->temporaryInventoryDepletion = [];
+    }
+
+    public function resetTransaction()
+    {
+        // Clear the cart
+        $this->cart = [];
+
+        // Reset any other related variables
+        $this->cart = [];
+        $this->subtotal = 0;
+        $this->total = 0;
+        $this->discount = 0;
+        $this->discountPercentage = 0;
+        $this->amountTendered = 0;
+        $this->change = 0;
+
+        // Optionally reset any session messages
+        session()->flash('message', 'Transaction has been reset.');
+    }
+
+    public function selectItemToCart($itemId)
     {
 
         foreach ($this->cart as $key => $item) {
@@ -208,6 +296,7 @@ class SaleTransaction extends Component
 
 
                     $this->calculateTotals();
+                    $this->updateCartSubtotal();
 
 
                     session()->flash('message', 'Quantity updated successfully.');
@@ -237,15 +326,34 @@ class SaleTransaction extends Component
 
     public function calculateTotals()
     {
-        $this->subtotal = array_sum(array_column($this->cart, 'subtotal'));
+
+        $this->subtotal = 0;
+
+        // Calculate subtotal based on price and quantity for each cart item
+        foreach ($this->cart as $cartItem) {
+            $this->subtotal += $cartItem['price'] * $cartItem['quantity'];
+        }
+
+        $this->discountPercentage = $this->discountPercentage ?? 0;
+        $this->discount = ($this->subtotal * $this->discountPercentage) / 100;
+
+
         $this->total = $this->subtotal - $this->discount;
+
+
         $this->change = $this->amountTendered - $this->total;
     }
 
-    public function applyDiscount($discount)
+    public function applyDiscount()
     {
-        $this->discount = $discount;
-        $this->calculateTotals();
+        // Validate discount percentage
+        if ($this->discountPercentage >= 0 && $this->discountPercentage <= 100) {
+            // Recalculate the totals based on the discount
+            $this->calculateTotals();
+        } else {
+            session()->flash('error', 'Invalid discount percentage.');
+        }
+
     }
 
     public function updateAmountTendered($amount)
@@ -253,6 +361,18 @@ class SaleTransaction extends Component
         $this->amountTendered = $amount;
         $this->calculateTotals();
     }
+
+    public function updateCartSubtotal()
+    {
+        foreach ($this->cart as $index => $item) {
+            // Calculate subtotal (price * quantity) and store it in the cart array
+            $this->cart[$index]['subtotal'] = $item['price'] * $item['quantity'];
+        }
+
+        // Optionally call the method to calculate the grand total or other totals
+        $this->calculateTotals();
+    }
+
 
     public function render()
     {

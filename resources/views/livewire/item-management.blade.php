@@ -22,8 +22,8 @@
                             <button class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#addingModal"><i
                                     class="fa fa-plus" aria-hidden="true"></i> Add Item</button>
                             <button class="btn btn-success px-3" data-bs-toggle="modal" data-bs-target="#vatModal">
-                                <i class="fa fa-eye" aria-hidden="true"></i> Vatable
-                                Items</button>
+                                <i class="fa fa-eye" aria-hidden="true"></i> Vatable Items
+                            </button>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -180,7 +180,7 @@
 
                             <div class="col-lg-12 col-sm-6 col-12">
                                 <input class="form-check-input" type="checkbox" name="flexRadioDefault"
-                                    id="flexRadioDefault1" wire:model="isVatable" value="yes">
+                                    id="flexRadioDefault1" wire:model="isVatable" value="1">
                                 <label class="form-check-label" for="flexRadioDefault1">
                                     Is Vatable
                                 </label>
@@ -295,64 +295,88 @@
         </div>
     </div>
     <div class="modal fade" id="vatModal" tabindex="-1" aria-labelledby="vatModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="vatModalLabel">Vatable Items</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row w-100">
-                        <div class="table-responsive">
-
-
-                            <table class="table  datanew">
-                                <thead>
-                                    <tr class="text-center">
-
-                                        <th>Item ID</th>
-                                        <th>Item Name</th>
-                                        <th>Description</th>
-                                        <th>Category</th>
-                                        <th>Unit Price</th>
-                                        <th>VAT</th>
-                                        <th>Selling Price</th>
-                                        <th>Date Added</th>
-                                        <th>Supplier</th>
-
-                                    </tr>
-                                </thead>
-                                <tbody>
-
-                                    @foreach ($vatable as $i)
-                                                                        @php
-                                                                            $vat = $i->unitPrice * 0.12;
-                                                                            $sellingPrice = $i->unitPrice + $vat;
-                                                                        @endphp
-                                                                        <tr class="text-center">
-                                                                            <td>{{ $i->itemID }}</td>
-                                                                            <td>{{ $i->itemName }}</td>
-                                                                            <td>{{ $i->description }}</td>
-                                                                            <td>{{ $i->itemCategory }}</td>
-                                                                            <td>P {{ $i->unitPrice }}</td>
-                                                                            <td>P {{ $i->sellingPrice }}</td>
-                                                                            <td>P {{ $vat }}</td>
-                                                                            <td>P {{ $sellingPrice }}</td>
-                                                                            <td>{{ $i->created_at }}</td>
-                                                                            <td>No Name</td>
-                                                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vatModalLabel">Vatable Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if($vatable->isEmpty())
+                    <p>No vatable items found.</p>
+                @else
+                    <div class="container">
+                        @foreach ($vatable as $item)
+                            @php
+                                $vat = $item->isVatable ? $item->unitPrice * 0.12 : 0; // Calculate VAT only if item is vatable
+                                $sellingPrice = $item->unitPrice + $vat; // Total selling price
+                            @endphp
+                            <form class="mb-4 p-3 border">
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">Item Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" value="{{ $item->itemName }}" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">Description</label>
+                                    <div class="col-sm-9">
+                                        <textarea class="form-control" readonly>{{ $item->description }}</textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">Category</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" value="{{ $item->itemCategory }}" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">Unit Price</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" value="P {{ number_format($item->unitPrice, 2) }}" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">VAT (12%)</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" value="P {{ number_format($vat, 2) }}" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">VAT Value Added</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" value="P {{ number_format($sellingPrice, 2) }}" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label">Supplier</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" value="{{ $item->supplier->name ?? 'No Name' }}" readonly>
+                                    </div>
+                                </div>
+                            </form>
+                        @endforeach
                     </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
-                </div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
+
+
+
+
+
+
+
+
 </div>

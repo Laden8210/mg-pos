@@ -30,39 +30,14 @@
                 <div class="table-responsive">
                     <table class="table  datanew">
                         <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Quantity Sold</th>
-                                <th>Quantity Planned</th>
-                                <td>QTY on Hand</td>
-                                <th>Average Turnover</th>
-                                <th>Total Sales</th>
-                            </tr>
+                            
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Young Town Sardine</td>
-                                <td>728</td>
-                                <td>500</td>
-                                <td>300</td>
-                                <td>16.57%</td>
-                                <td>₱14,560.00</td>
-                            </tr>
-                            <tr>
-                                <td>Nestea Apple</td>
-                                <td>489</td>
-                                <td>350</td>
-                                <td>189</td>
-                                <td>16.57%</td>
-                                <td>₱12,225.00</td>
-                            </tr>
+                            
                         </tbody>
                     </table>
                 </div>
                 <div class="row justify-content-end">
-                    <div class="btn-group col-sm-2 mt-5">
-                        <button type="button" class="btn btn-warning" data-bs-dismiss="modal">View</button>
-                    </div>
                     <div class="btn-group col-sm-2 mt-5">
                         <button type="button" class="btn btn-success" data-bs-dismiss="modal">Print</button>
                     </div>

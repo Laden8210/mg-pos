@@ -2,16 +2,15 @@
 
     <div class="content-wrapper">
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h2>Inventory Management</h2>
+            <h2>Sales Transaction</h2>
             <div class="card">
                 <div class="card-body">
-                    <h3>Cart</h3>
+                    <h3>Counter</h3>
 
                     <div class="w-25 my-2">
-                        <input type="text" autofocus id="barcode" placeholder="Scan here" wire:model.live.debounce.1000ms="barcode"
-                            class="form-control">
+                        <input type="text" autofocus id="barcode" placeholder="Scan here"
+                            wire:model.live.debounce.1000ms="barcode" class="form-control">
                     </div>
-
 
                     @if (session()->has('error'))
                         <div class="alert alert-danger">
@@ -23,7 +22,6 @@
                         <div class="alert alert-success">
                             {{ session('message') }}
                         </div>
-
                     @endif
 
                     <div class="table-responsive" wire:poll>
@@ -42,34 +40,22 @@
                                     <tr>
                                         <td>{{ $cartItem['name'] }}</td>
                                         <td>P {{ number_format($cartItem['price'], 2) }}</td>
-                                        <td>
-                                            {{-- <input type="number"
-                                            wire:model.defer="cart.{{ $cartItem['id'] }}.quantity"
-                                            wire:change="updateQuantity({{ $cartItem['id'] }}, $event.target.value)"
-                                            class="form-control"
-                                            style="width: 80px;"
-                                            min="1"> --}}
-                                            {{ $cartItem['quantity'] }}
-                                        </td>
+                                        <td>{{ $cartItem['quantity'] }}</td>
                                         <td>P {{ number_format($cartItem['subtotal'], 2) }}</td>
-
                                         <td>
                                             <button class="btn btn-danger btn-sm" type="button"
-                                                wire:click="removeFromCart({{ $cartItem['id'] }})"><i
-                                                    class="fa fa-trash" aria-hidden="true"></i></button>
+                                                wire:click="removeFromCart({{ $cartItem['id'] }})"><i class="fa fa-trash"
+                                                    aria-hidden="true"></i></button>
                                             <button class="btn btn-secondary btn-sm" type="button"
-                                                wire:click="selectItemToCartFuck({{ $cartItem['id'] }})"
-                                                data-bs-toggle="modal"
-                                                    data-bs-target="#editQuantity"><i
-                                                    class="fa fa-edit" aria-hidden="true" ></i></button>
+                                                wire:click="selectItemToCart({{ $cartItem['id'] }})" data-bs-toggle="modal"
+                                                data-bs-target="#editQuantity"><i class="fa fa-edit"
+                                                    aria-hidden="true"></i></button>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-
-
 
                     <div class="modal fade " id="editQuantity" data-bs-backdrop="static" data-bs-keyboard="false"
                         tabindex="-1" aria-labelledby="editQuantityLabel" aria-hidden="true" wire:ignore>
@@ -81,23 +67,20 @@
                                         aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-
-                                    <form  wire:submit.prevent="updateQuantityItemCart">
-                                        <div class="form-group" <label for="quantity">Quantity</label>
+                                    <form wire:submit.prevent="updateQuantityItemCart">
+                                        <div class="form-group"><label for="quantity">Quantity</label>
                                             <input type="number" wire:model="itemQuantity" class="form-control"
                                                 id="quantity" placeholder="Enter Quantity" min="1">
                                         </div>
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Close</button>
-                                        <button type="submit" class="btn btn-primary"  data-bs-dismiss="modal">Confirm</button>
+                                        <button type="submit" class="btn btn-primary"
+                                            data-bs-dismiss="modal">Confirm</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-
-
 
                     <div class="row mt-4">
                         <div class="col-sm-8">
@@ -115,10 +98,14 @@
                                                 value="P {{ number_format($total, 2) }}" readonly>
                                         </div>
                                         <div class="col-sm-6 mt-3">
-                                            <label>Discount</label>
-                                            <input type="number" wire:model="discount"
-                                                wire:change="applyDiscount($event.target.value)" class="form-control"
-                                                placeholder="Enter Discount" min="0" step="0.01">
+                                            <label for="discount">Discount Percentage:</label>
+                                            <div class="input-group">
+                                                <input type="number" wire:model="discountPercentage"
+                                                    placeholder="Enter discount percentage" min="0" max="100"
+                                                    class="form-control" />
+                                                <button wire:click="applyDiscount"
+                                                    class="btn btn-primary">Apply Discount</button>
+                                            </div>
                                         </div>
                                         <div class="col-sm-6 mt-3">
                                             <label>Amount Tendered</label>
@@ -136,17 +123,16 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-sm-4">
+                        <h5>Transaction No: 0001</h5>
                             <div class="card">
                                 <div class="card-body">
-
-                                    <button class="btn btn-success btn-lg w-100">Print</button>
+                                    <button class="btn btn-success btn-lg w-100"
+                                        wire:click="preparePrint">Print</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
 
                     <div class="d-flex justify-content-between mt-3">
                         <button wire:click="toggleInventory" class="btn btn-primary">
@@ -166,7 +152,7 @@
                                             <th>Item Name</th>
                                             <th>Price</th>
                                             <th>Quantity Available</th>
-                                            <th>Add to Cart</th>
+                                            <th>Add to Count</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -179,7 +165,7 @@
                                                 <td>{{ $item->qtyonhand }}</td>
                                                 <td>
                                                     <button wire:click="addToCart({{ $item->inventoryId }})"
-                                                        class="btn btn-success btn-sm">Add to Cart</button>
+                                                        class="btn btn-success btn-sm">Add to Count</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -192,7 +178,6 @@
             </div>
         </div>
     </div>
-
 
     <script>
         // document.getElementById('barcode').addEventListener('input', function(event) {

@@ -13,7 +13,7 @@ class UserManagementAccount extends Component
 {
     use WithPagination;
     use WithFileUploads;
-
+    use WithoutUrlPagination;
 
     public $firstname;
     public $lastname;
@@ -46,13 +46,9 @@ class UserManagementAccount extends Component
     public $uavatar;
     public $employee_id;
 
-
     public $search = '';
 
     private $employees;
-
-    use WithoutUrlPagination;
-
 
     public function render()
     {
@@ -75,7 +71,7 @@ class UserManagementAccount extends Component
             'role' => 'required|string|max:255',
             'status' => 'required|string|in:Active,Inactive',
             'username' => 'required|string|max:255|unique:employees,username',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8|regex:/[A-Z]/|regex:/[a-z]/|regex:/[0-9]/|confirmed',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10428',
         ]);
 
@@ -120,15 +116,13 @@ class UserManagementAccount extends Component
         session()->flash('message', 'Employee account created successfully.');
     }
 
-
-
-    public function sayHelllo()
+    public function sayHello()
     {
         dd('Hello');
     }
 
-    public function editUser($id){
-
+    public function editUser($id)
+    {
         $employee = Employee::find($id);
         $this->employee_id = $employee->employee_id;
         $this->ufirstname = $employee->firstname;
@@ -158,8 +152,7 @@ class UserManagementAccount extends Component
             'urole' => 'required|string|max:255',
             'ustatus' => 'required|string|in:Active,Inactive',
             'uusername' => 'required|string|max:255|unique:employees,username,' . $this->employee_id . ',employee_id',
-            'upassword' => 'nullable|string|min:6',
-            'upassword_confirmation' => 'same:upassword',
+            'upassword' => 'nullable|string|min:8|regex:/[A-Z]/|regex:/[a-z]/|regex:/[0-9]/|same:upassword_confirmation',
         ]);
 
         $employee = Employee::find($this->employee_id);
@@ -180,7 +173,6 @@ class UserManagementAccount extends Component
             // Update password if provided
             if ($this->upassword) {
                 $employee->password = bcrypt($this->upassword);
-
             }
 
             // Handle avatar upload if present
@@ -204,5 +196,4 @@ class UserManagementAccount extends Component
             session()->flash('error', 'Employee not found.');
         }
     }
-
 }

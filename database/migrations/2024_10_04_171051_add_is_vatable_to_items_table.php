@@ -12,15 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('items', function (Blueprint $table) {
-            $table->decimal('sellingPrice', 8, 2)->after('unitPrice')->nullable(false);
+            $table->boolean('isVatable')->default(0);
         });
     }
 
-    /**cls
+    /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        //
+        Schema::table('items', function (Blueprint $table) {
+            $table->dropColumn('isVatable');
+        });
     }
 };

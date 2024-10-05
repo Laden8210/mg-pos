@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use App\Models\Employee; // Make sure this line is included
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\Item;
+
+use \Carbon\Carbon;
+
 class POSController extends Controller
 {
     // Redirect to dashboard if user is authenticated, otherwise show login view
@@ -30,6 +34,16 @@ class POSController extends Controller
         return view('index'); // Assuming 'index' is your login view
     }
 
+    public function showReorderList()
+    {
+        // Fetch the data you need, modify as per your requirements
+        $reorderItems = Inventory::with(['item', 'supplier'])
+        ->where('qtyonhand', '<=', \DB::raw('reorder_point'))
+        ->get();
+
+        // Pass the data to the view
+        return view('reorder_list_report', compact('reorderItems'));
+    }
 
     // Handle user login
     public function login(Request $request)
@@ -80,15 +94,38 @@ class POSController extends Controller
     }
 
     public function showInventoryAdjustment()
-{
-    // Fetch inventory data
-    $inventories = Inventory::with('item')->get(); // Assuming you have an Inventory model with item relationship
+    {
+        // Fetch inventory data
+        $inventories = Inventory::with('item', 'supplier')->get(); // Assuming you have an Inventory model with item relationship
 
-    // Pass inventories to the view
-    return view('inventory.adjustment', compact('inventories'));
-}
+        // Pass inventories to the view
+        return view('inventory.adjustment', compact('inventories'));
+    }
 
+    public function showInventoryReport()
+    {
+        $salseStockCard = Inventory::all();  // Fetch data from the database
+        return view('report.inventory_report', compact('salseStockCard'));
+    }
 
+    public function showVatableItems()
+    {
+        // Fetch all vatable items from the database
+        $vatableItems = Item::where('is_vatable', true) // Assuming 'is_vatable' is a column in your items table
+            ->with('supplier') // Load supplier data if there's a relationship defined
+            ->get();
+
+        return view('inventory.vatable_items', compact('vatableItems'));
+    }
+
+    public function fetchVatableItems()
+    {
+        // Fetch your vatable items here
+        $this->vatable = Item::where('isVatable', true)->get();
+
+        // Log for debugging
+        \Log::info('Vatable Items:', $this->vatable->toArray());
+    }
 
     // Log out the user and invalidate the session
     public function logout(Request $request): RedirectResponse
@@ -171,13 +208,19 @@ class POSController extends Controller
     // Inventory report view
     public function inventoryReport()
     {
-        return view('report.inventory_report');
+        // Retrieve necessary data and pass it to the view
+        $salseStockCard = Inventory::all(); // Example data
+
+        return view('report.inventory_report', compact('salseStockCard'));
     }
+
 
     // Reorder list report view
     public function reorderListReport()
     {
-        return view('report.reorder_list_report');
+        $reorderItems = Inventory::where('qtyonhand', '<=', 'reorder_point')->get();
+        
+        return view('report.reorder_list_report', compact('reorderItems'));
     }
 
     // Fast moving items report view
@@ -195,7 +238,11 @@ class POSController extends Controller
     // Sales report view
     public function salesReport()
     {
-        return view('report.sales_report');
+        // Fetch sales-related data
+        $salesStockCard = Inventory::with(['item', 'supplier']) // Assuming relationships exist
+            ->get(); // You can filter or paginate as needed
+
+        return view('report.sales_report', compact('salesStockCard'));
     }
 
     // Stock movement report view
@@ -237,4 +284,6 @@ class POSController extends Controller
     {
         return view('user.user_account');
     }
+
+    
 }

@@ -59,7 +59,7 @@
                         </div>
                         <div class="col-md-3">
                             <label for="expirationDate" class="form-label">Expiration Date</label>
-                            <input type="text" class="form-control" id="expirationDate" value="" readonly>
+                            <input type="text" class="form-control" id="expirationDate" value="6" readonly>
                         </div>
                         <div class="col-md-3">
                             <label for="batch" class="form-label">Batch</label>
@@ -79,13 +79,7 @@
                 <div class="table-responsive">
                     <table class="table  datanew">
                         <thead>
-                            <th>DATE</th>
-                            <th>QUANTITY IN</th>
-                            <th>VALUE OUT</th>
-                            <th>QUANTITY OUT</th>
-                            <th>VALUE IN</th>
-                            <th>QTY ON HAND</th>
-                            <th>REMARKS</th>
+
                         </thead>
                         <tbody>
 

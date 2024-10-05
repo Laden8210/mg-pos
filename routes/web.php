@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\AvatarController;
-use App\Http\Livewire\InventoryAdjustment;
+use App\Http\Controllers\InvoiceController;
 
+// Print Invoice Route
+Route::post('/print-invoice', [InvoiceController::class, 'printInvoice']);
 
 // Public routes
 Route::get('/', [POSController::class, 'index'])->name('home'); // Home route
@@ -15,6 +17,7 @@ Route::post('/logout', [POSController::class, 'logout'])->name('logout'); // Log
 Route::get('/user', [POSController::class, 'user'])->name('user');
 Route::get('/user_account', [POSController::class, 'userInformation'])->name('user_account');
 Route::post('/upload-avatar', [AvatarController::class, 'upload'])->name('upload.avatar');
+
 // Protected routes (requires authentication)
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [POSController::class, 'dashboard'])->name('dashboard');
@@ -23,10 +26,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/salereturn', [POSController::class, 'salereturn'])->name('salereturn');
     Route::get('/saletransaction', [POSController::class, 'saletransaction'])->name('saletransaction');
 
-    // User management
-
-
-
     // Supplier information
     Route::get('/supplier', [POSController::class, 'supplier'])->name('supplier');
     Route::get('/order', [POSController::class, 'orderSupplies'])->name('order_supplies');
@@ -34,7 +33,6 @@ Route::middleware('auth')->group(function () {
 
     // Item management
     Route::get('/item_management', [POSController::class, 'itemManagement'])->name('item_management');
-
 
     // Inventory management
     Route::get('/inventory_management', [POSController::class, 'inventoryManagement'])->name('inventory_management');
@@ -54,3 +52,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/sales_return_report', [POSController::class, 'salesReturnReport'])->name('sales_return_report');
     Route::get('/transaction_history_report', [POSController::class, 'transactionHistoryReport'])->name('transaction_history_report');
 });
+
+// Print receipt route
+Route::get('/print-reciept/{items}/{subtotal}/{total}/{discount}/{amountTendered}/{change}', [InvoiceController::class, 'printInvoice'])->name('print-reciept');
+
+// Print Sales Report Route (Corrected)
+Route::get('/print-sales-report', [InvoiceController::class, 'generateSalesReport'])->name('print-sales-report');
+
+// Print Inventory Report Route (Corrected)
+Route::get('/print-inventory-report', [InvoiceController::class, 'generateInventoryReport'])->name('print-inventory-report');
+
+// Print Reorder List Report route
+Route::get('/print-reorder-list-report', [InvoiceController::class, 'generateInventoryReport'])->name('print-reorder-list-report');
+
+
+Route::get('/inventory_report', [POSController::class, 'inventoryReport'])->name('inventory_report');
+Route::get('/vatable-items', [POSController::class, 'showVatableItems'])->name('vatable.items');
+
+Route::get('/reorder-list-report', [POSController::class, 'reorderListReport'])->name('reorder.list.report');
+
+Route::get('/StockMovementReport', [POSController::class, 'stockMovementReport'])->name('stock.movement.report');
+

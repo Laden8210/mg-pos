@@ -30,39 +30,14 @@
                 <div class="table-responsive">
                     <table class="table  datanew">
                         <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Quantity Sold</th>
-                                <th>Quantity Planned</th>
-                                <th>QTY on Hand </th>
-                                <th>Average Turnover</th>
-                                <th>Total Sales</th>
-                            </tr>
+                            
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>White Sugar 1Kg.</td>
-                                <td>156</td>
-                                <td>350</td>
-                                <td>280</td>
-                                <td>32.25%</td>
-                                <td>₱28,080.00</td>
-                            </tr>
-                            <tr>
-                                <td>Sting</td>
-                                <td>130</td>
-                                <td>350</td>
-                                <td>189</td>
-                                <td>103.44%</td>
-                                <td>₱5,200.00</td>
-                            </tr>
+                            
                         </tbody>
                     </table>
                 </div>
                 <div class="row justify-content-end">
-                    <div class="btn-group col-sm-2 mt-5">
-                        <button type="button" class="btn btn-warning" data-bs-dismiss="modal">View</button>
-                    </div>
                     <div class="btn-group col-sm-2 mt-5">
                         <button type="button" class="btn btn-success" data-bs-dismiss="modal">Print</button>
                     </div>

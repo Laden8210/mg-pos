@@ -137,16 +137,6 @@
                               </a>
                           </li>
                           <li class="menu-item">
-                              <a href="/fast_moving_item_report" class="menu-link" data-url="/fast_moving_item_report">
-                                  <div data-i18n="Fast-Moving Items Report">Fast-Moving Items Report</div>
-                              </a>
-                          </li>
-                          <li class="menu-item">
-                              <a href="/slow_moving_item_report" class="menu-link" data-url="/slow_moving_item_report">
-                                  <div data-i18n="Slow-Moving Items Report">Slow-Moving Items Report</div>
-                              </a>
-                          </li>
-                          <li class="menu-item">
                               <a href="/sales_report" class="menu-link" data-url="/sales_report">
                                   <div data-i18n="Sales Report">Sales Report</div>
                               </a>
@@ -154,11 +144,6 @@
                           <li class="menu-item">
                               <a href="/stock_movement_report" class="menu-link" data-url="/stock_movement_report">
                                   <div data-i18n="Stock Movement Report">Stock Movement Report</div>
-                              </a>
-                          </li>
-                          <li class="menu-item">
-                              <a href="/expiration_report" class="menu-link" data-url="/expiration_report">
-                                  <div data-i18n="Expiration Report">Expiration Report</div>
                               </a>
                           </li>
                           <li class="menu-item">
