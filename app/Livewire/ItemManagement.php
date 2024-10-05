@@ -31,40 +31,41 @@ class ItemManagement extends Component
             'livewire.item-management',
             [
                 'items' => Item::search($this->search)->paginate(10),
-                'vatable' => $this->vatable,
+                'vatable' => Item::where('isVatable', true)->get()
             ]
         );
     }
     public function save()
-{
-    $this->validate([
-        'name' => 'required|string|max:255',
-        'category' => 'required|string|max:255',
-        'barcode' => 'nullable|string|size:15',
-        'description' => 'nullable|string|max:500',
-        'unitPrice' => 'required|numeric|min:0',
-        'supplier' => 'required|string|max:255', // Validate supplier
-        'isVatable' => 'boolean'
-    ], [
-        // Custom validation messages...
-    ]);
+    {
 
-    Item::create([
-        'itemName' => $this->name,
-        'itemCategory' => $this->category,
-        'barcode' => $this->barcode,
-        'description' => $this->description,
-        'unitPrice' => $this->unitPrice,
-        'sellingPrice' => $this->unitPrice * 1.2,
-        'status' => 'Active',
-        'isVatable' => $this->isVatable,
-        'supplier' => $this->supplier, // Store supplier
-    ]);
+       $this->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'barcode' => 'nullable|string|size:13',
+            'description' => 'nullable|string|max:500',
+            'unitPrice' => 'required|numeric|min:0',
+            'isVatable' => 'boolean'
+        ], [
+            // Custom validation messages...
+        ]);
 
-    // Reset fields
-    $this->reset(['name', 'category', 'barcode', 'description', 'unitPrice', 'supplier']);
-    session()->flash('message', 'Item successfully added.');
-}
+
+        Item::create([
+            'itemName' => $this->name,
+            'itemCategory' => $this->category,
+            'barcode' => $this->barcode,
+            'description' => $this->description,
+            'unitPrice' => $this->unitPrice,
+            'sellingPrice' => $this->unitPrice * 1.2,
+            'status' => 'Active',
+            'isVatable' => $this->isVatable
+        ]);
+
+
+        // Reset fields
+        $this->reset(['name', 'category', 'barcode', 'description', 'unitPrice', 'supplier']);
+        session()->flash('message', 'Item successfully added.');
+    }
 
     public function selectItem($id)
     {
@@ -170,7 +171,6 @@ class ItemManagement extends Component
         $item = Item::find($this->selectedItem->itemID);
         $item->delete();
         session()->flash('message', 'Item successfully deleted.');
-
     }
 
 

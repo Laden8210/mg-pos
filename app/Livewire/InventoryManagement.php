@@ -33,9 +33,9 @@ class InventoryManagement extends Component
     public function updatedSelectedItem($value)
     {
         // This method will be called whenever selectedItem changes
-        $this->stockCardInventories = StockCard::where('inventoryId', $value)->with('item')->get();
-
-
+        $this->stockCardInventories = StockCard::whereHas('inventory', function ($query) use ($value) {
+                $query->where('itemID', $value);
+            })->with('inventory')->get();
     }
 
     public function render()
@@ -45,22 +45,32 @@ class InventoryManagement extends Component
 
         // Load related models with `with()`, aggregate fields with `selectRaw()`
         $inventories = Inventory::with(['item', 'purchaseItems', 'purchaseOrders', 'supplierItem', 'supplier']) // Load relationships
-            ->selectRaw('inventoryId, batch, itemID, qtyonhand as total_qtyonhand, original_quantity as total_original_quantity, SupplierId') // Aggregate inventory fields
+            ->selectRaw('inventoryId, batch, itemID, qtyonhand as total_qtyonhand, original_quantity as total_original_quantity, SupplierId, expiry_date') // Aggregate inventory fields
             ->when($this->search, function ($query) {
                 $query->whereHas('purchaseOrders', function ($query) {
                     $query->where('SupplierName', 'like', '%' . $this->search . '%');
                 });
             })
+            ->where('qtyonhand', '>', 0) // Filter out items with zero quantity
             ->paginate(10);
 
         foreach ($inventories as $inventory) {
             $this->checkReorderPoint($inventory); // Process reorder point check
         }
+        $items = Inventory::with('item')
+            ->groupBy('itemID')
+            ->selectRaw('itemID, MAX(inventoryId) as inventoryId')
+            ->get();
+
+
+
+
 
         return view('livewire.inventory-management', [
             'inventories' => $inventories, // Pass inventory data
             'supplies' => $supplies, // Pass supplier data
             'supplier' => $supplier, // Pass supplier data
+            'items' => $items, // Pass items data
             'stockCardInventories' => $this->stockCardInventories, // Pass stock card inventories
         ]);
     }
@@ -91,21 +101,62 @@ class InventoryManagement extends Component
         $inventory->save();
     }
 
+    protected function generateUniquePurchaseNumber()
+    {
+        do {
+            // Generate a new purchase number
+            $purchaseNumber = 'PO-' . strtoupper(uniqid());
+        } while (PurchaseOrder::where('purchase_number', $purchaseNumber)->exists());
+
+        return $purchaseNumber;
+    }
+
     public function confirmReorder($inventoryId)
     {
         $inventory = Inventory::find($inventoryId);
 
         if ($inventory) {
-            $purchaseOrder = PurchaseOrder::where('SupplierId', $inventory->itemID)->first();
 
-            if ($purchaseOrder) {
-                $this->updatePurchaseOrder($purchaseOrder, $inventory);
-            } else {
-                $this->createPurchaseOrder($inventory);
-            }
+
+            // if ($purchaseOrder) {
+            //     $this->updatePurchaseOrder($purchaseOrder, $inventory);
+            // } else {
+            //     $this->createPurchaseOrder($inventory);
+            // }
+
+            $purchaseOrder = PurchaseOrder::create([
+                'SupplierId' => $inventory->SupplierId,
+                'order_date' => now(),
+                'delivery_date' => now()->addDays(7),
+                'status' => 'Pending',
+                'purchase_number' => $this->generateUniquePurchaseNumber(),
+                'quantity' => $inventory->original_quantity,
+                'total_price' => $inventory->original_quantity * $inventory->item->unitPrice
+            ]);
+
+
+            PurchaseItem::create([
+                'purchase_order_id' => $purchaseOrder->purchase_order_id,
+                'itemID' => $inventory->itemID,
+                'quantity' => $inventory->original_quantity,
+                'unit_price' => $inventory->item->unitPrice,
+                'total_price' => $inventory->original_quantity * $inventory->item->unitPrice
+            ]);
+
+            // $purchaseOrder->items()->create([
+            //     'itemID' => $inventory->itemID,
+            //     'quantity' => $inventory->original_quantity,
+            //     'unit_price' => $inventory->item->unitPrice,
+            //     'total_price' => $inventory->original_quantity * $inventory->item->unitPrice,
+
+            // ]);
+
 
             $inventory->status = 'Re-ordered';
+
+
             $inventory->save();
+
             session()->flash('message-status', 'Re-order has been confirmed successfully for Item: ' . $inventory->item->itemName);
         } else {
             session()->flash('message-status', 'Inventory item not found');
@@ -224,30 +275,58 @@ class InventoryManagement extends Component
             'quantity' => 'required|numeric|min:1',
             'remarks' => 'required'
         ]);
-        $inventory = Inventory::where('itemId', $this->selectedItemAdjustment)
 
-            ->where('qtyonhand', '>=', 0)
-            ->first();
+        // Find all inventories for the selected item, ordered by availability
+        $inventories = Inventory::where('itemId', $this->selectedItemAdjustment)
+            ->where('qtyonhand', '>', 0)
+            ->orderBy('qtyonhand', 'asc') // Get from the least qty first
+            ->get();
 
-
-        if (!$inventory) {
-            session()->flash('message-status', 'Inventory item not found');
+        // If no inventory is found, return an error
+        if ($inventories->isEmpty()) {
+            session()->flash('message-status', 'Inventory item not found or insufficient stock');
             return;
         }
 
+        $totalQuantity = $this->quantity;
+
+        // Process when remarks are "Send"
         if ($this->remarks == "Send") {
-            StockCard::create([
-                'inventoryId' => $inventory->inventoryId,
-                'DateReceived' => now(),
-                'Quantity' => $this->quantity,
-                'Type' => 'Sales',
-                'ValueOut' => $this->quantity * $inventory->item->unitPrice,
-                'Remarks' => $this->remarks,
-                'Value' => $this->quantity * $inventory->item->unitPrice,
-                'supplierItemID' => $inventory->supplierItem->supplierItemID,
-            ]);
-            $inventory->qtyonhand =  $inventory->qtyonhand - $this->quantity;
+            foreach ($inventories as $inventory) {
+                if ($totalQuantity <= 0) break;
+
+                // Calculate how much we can subtract from this inventory
+                $deductible = min($inventory->qtyonhand, $totalQuantity);
+
+                // Create stock card for this deduction
+                StockCard::create([
+                    'inventoryId' => $inventory->inventoryId,
+                    'DateReceived' => now(),
+                    'Quantity' => $deductible,
+                    'Type' => 'Sales',
+                    'ValueOut' => $deductible * $inventory->item->unitPrice,
+                    'Remarks' => $this->remarks,
+                    'Value' => $deductible * $inventory->item->unitPrice,
+                    'supplierItemID' => $inventory->supplierItem->supplierItemID,
+                ]);
+
+                // Subtract the quantity from this inventory batch
+                $inventory->qtyonhand -= $deductible;
+                $inventory->save();
+
+                // Reduce the total quantity that still needs to be deducted
+                $totalQuantity -= $deductible;
+            }
+
+            // If quantity was not enough to fulfill the request
+            if ($totalQuantity > 0) {
+                session()->flash('message-status', 'Not enough inventory to fulfill the request');
+                return;
+            }
         } else {
+            // Process for adding stock when remarks are not "Send"
+            $inventory = $inventories->first(); // Use the first available inventory batch to add stock
+
             StockCard::create([
                 'inventoryId' => $inventory->inventoryId,
                 'DateReceived' => now(),
@@ -257,15 +336,16 @@ class InventoryManagement extends Component
                 'Remarks' => $this->remarks,
                 'Value' => $this->quantity * $inventory->item->unitPrice,
                 'supplierItemID' => $inventory->supplierItem->supplierItemID,
-
             ]);
-            $inventory->qtyonhand = +$inventory->qtyonhand + $this->quantity;
-        }
 
-        $inventory->save();
+            // Add the quantity to the first inventory's `qtyonhand`
+            $inventory->qtyonhand += $this->quantity;
+            $inventory->save();
+        }
 
         $this->showStockCardModal = false;
 
         session()->flash('message-status', 'Stock Card has been updated successfully');
     }
+
 }

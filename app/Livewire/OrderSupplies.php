@@ -234,12 +234,14 @@ class OrderSupplies extends Component
         // Debugging: Dump the order details
         foreach ($items as $item) {
 
+                $inventoryCount = Inventory::all()->count();
+
                 $inventory = Inventory::create([
                     'itemID' => $item->itemID,
                     'qtyonhand' => $item->quantity,
                     'original_quantity' => $item->quantity,
                     'date_received' => now(),
-                    'batch' => 'BATCH-' . now()->format('YmdHis'),
+                    'batch' => 'BATCH-' . $inventoryCount,
                     'expiry_date' => now()->addMonths(6),
                     'SupplierId' => $order->SupplierId,
                     'status' => ''

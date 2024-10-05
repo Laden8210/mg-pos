@@ -172,7 +172,7 @@
                                     <label>Description</label>
                                     <textarea type="text" placeholder="Enter Descriptions" wire:model="description">
                                     </textarea>
-                                    @error('category')
+                                    @error('description')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -306,62 +306,38 @@
                     <p>No vatable items found.</p>
                 @else
                     <div class="container">
-                        @foreach ($vatable as $item)
-                            @php
-                                $vat = $item->isVatable ? $item->unitPrice * 0.12 : 0; // Calculate VAT only if item is vatable
-                                $sellingPrice = $item->unitPrice + $vat; // Total selling price
-                            @endphp
-                            <form class="mb-4 p-3 border">
-                                <div class="row mb-3">
-                                    <label class="col-sm-3 col-form-label">Item Name</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" value="{{ $item->itemName }}" readonly>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <label class="col-sm-3 col-form-label">Description</label>
-                                    <div class="col-sm-9">
-                                        <textarea class="form-control" readonly>{{ $item->description }}</textarea>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <label class="col-sm-3 col-form-label">Category</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" value="{{ $item->itemCategory }}" readonly>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <label class="col-sm-3 col-form-label">Unit Price</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" value="P {{ number_format($item->unitPrice, 2) }}" readonly>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <label class="col-sm-3 col-form-label">VAT (12%)</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" value="P {{ number_format($vat, 2) }}" readonly>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <label class="col-sm-3 col-form-label">VAT Value Added</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" value="P {{ number_format($sellingPrice, 2) }}" readonly>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <label class="col-sm-3 col-form-label">Supplier</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" value="{{ $item->supplier->name ?? 'No Name' }}" readonly>
-                                    </div>
-                                </div>
-                            </form>
-                        @endforeach
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Unit Price</th>
+                                    <th>VAT (12%)</th>
+                                    <th>VAT Value Added</th>
+                                    <th>Supplier</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($vatable as $item)
+                                    @php
+                                        $vat = $item->isVatable ? $item->unitPrice * 0.12 : 0; // Calculate VAT only if item is vatable
+                                        $sellingPrice = $item->unitPrice + $vat; // Total selling price
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $item->itemName }}</td>
+                                        <td>{{ $item->description }}</td>
+                                        <td>{{ $item->itemCategory }}</td>
+                                        <td>P {{ number_format($item->unitPrice, 2) }}</td>
+                                        <td>P {{ number_format($vat, 2) }}</td>
+                                        <td>P {{ number_format($sellingPrice, 2) }}</td>
+                                        <td>{{ $item->supplier->name ?? 'No Name' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+
                     </div>
                 @endif
             </div>

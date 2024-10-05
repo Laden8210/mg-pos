@@ -28,7 +28,7 @@
                             </div>
                         </div>
                         <script>
-                            setTimeout(function () {
+                            setTimeout(function() {
                                 const toastElement = document.querySelector('.toast');
                                 const bsToast = new bootstrap.Toast(toastElement);
                                 bsToast.hide();
@@ -53,79 +53,77 @@
                             </thead>
                             <tbody>
                                 @forelse ($inventories as $inventory)
-                                                                <tr>
-                                                                    <td>{{ $inventory->batch }}</td>
+                                    <tr>
+                                        <td>{{ $inventory->batch }}</td>
 
-                                                                    <td class="text-center">
-                                                                        {{ $inventory->item ? $inventory->item->itemName : 'N/A' }}
-                                                                    </td>
-                                                                    @php
+                                        <td class="text-center">
+                                            {{ $inventory->item ? $inventory->item->itemName : 'N/A' }}
+                                        </td>
+                                        @php
 
-                                                                        $companyName = '';
-                                                                        foreach ($supplier as $sup) {
-                                                                            if ($sup->SupplierId == $inventory->SupplierId) {
-                                                                                $companyName = $sup->CompanyName;
-                                                                                break;
-                                                                            }
-                                                                        }
-                                                                    @endphp
+                                            $companyName = '';
+                                            foreach ($supplier as $sup) {
+                                                if ($sup->SupplierId == $inventory->SupplierId) {
+                                                    $companyName = $sup->CompanyName;
+                                                    break;
+                                                }
+                                            }
+                                        @endphp
 
-                                                                    <td class="text-center">{{ $companyName ?? 'N/A' }}
-                                                                    </td>
+                                        <td class="text-center">{{ $companyName ?? 'N/A' }}
+                                        </td>
 
-                                                                    <td class="text-center">
-                                                                        {{ $inventory->item ? $inventory->item->description : 'N/A' }}
-                                                                    </td>
-                                                                    <td class="text-center">
-                                                                        {{ $inventory->item ? $inventory->item->itemCategory : 'N/A' }}
-                                                                    </td>
-                                                                    <td class="text-center">{{ $inventory->total_qtyonhand }}</td>
+                                        <td class="text-center">
+                                            {{ $inventory->item ? $inventory->item->description : 'N/A' }}
+                                        </td>
+                                        <td class="text-center">
+                                            {{ $inventory->item ? $inventory->item->itemCategory : 'N/A' }}
+                                        </td>
+                                        <td class="text-center">{{ $inventory->total_qtyonhand }}</td>
 
-                                                                    <td class="text-center">
-                                                                        {{ $inventory->expiry_date ? \Carbon\Carbon::parse($inventory->expiry_date)->format('m/d/Y') : 'N/A' }}
-                                                                    </td>
+                                        <td class="text-center">
+                                            {{ $inventory->expiry_date ? \Carbon\Carbon::parse($inventory->expiry_date)->format('m/d/Y') : 'N/A' }}
+                                        </td>
 
 
-                                                                    <td class="text-center">
-                                                                        @php
-                                                                            // Calculate the reorder point dynamically based on 40% of the qtyonhand
-                                                                            $reorderPoint = $inventory->total_qtyonhand * 0.4;
-                                                                        @endphp
+                                        <td class="text-center">
+                                            @php
+                                                // Calculate the reorder point dynamically based on 40% of the qtyonhand
+                                                $reorderPoint = $inventory->total_original_quantity * 0.3;
 
-                                                                        @if ($inventory->total_qtyonhand <= $reorderPoint)
-                                                                            <span class="badge bg-danger">Critical level</span>
-                                                                        @else
-                                                                            <span class="badge bg-success">Sufficient Stock</span>
-                                                                        @endif
+                                            @endphp
 
-                                                                    </td>
-                                                                    <td class="text-center">
-                                                                        @php
-                                                                            // Calculate the 40% threshold for showing the reorder button
-                                                                            $threshold = $inventory->qtyonhand * 0.4;
-                                                                        @endphp
-                                                                        @if ($inventory->status === 'Not Yet')
-                                                                            <button class="btn btn-secondary dropdown-toggle" type="button"
-                                                                                id="dropdownMenuButton{{ $inventory->inventoryId }}"
-                                                                                data-bs-toggle="dropdown" aria-expanded="false">
-                                                                                Action
-                                                                            </button>
-                                                                            <ul class="dropdown-menu"
-                                                                                aria-labelledby="dropdownMenuButton{{ $inventory->inventoryId }}">
-                                                                                <li><a class="dropdown-item" href="#"
-                                                                                        wire:click.prevent="confirmReorder({{ $inventory->inventoryId }})">Re-order</a>
-                                                                                </li>
-                                                                                <li><a class="dropdown-item" href="#"
-                                                                                        wire:click.prevent="cancelReorder({{ $inventory->inventoryId }})">Cancel</a>
-                                                                                </li>
-                                                                            </ul>
-                                                                        @else
-                                                                            {{ $inventory->status }}
-                                                                            <span>No Action Needed</span>
-                                                                        @endif
-                                                                    </td>
+                                            @if ($inventory->total_qtyonhand <= $reorderPoint)
+                                                <span class="badge bg-danger">Critical level</span>
+                                            @else
+                                                <span class="badge bg-success">Sufficient Stock</span>
+                                            @endif
 
-                                                                </tr>
+                                        </td>
+                                        <td class="text-center">
+
+                                            @if ($inventory->total_qtyonhand <= $reorderPoint)
+                                                <button class="btn btn-secondary dropdown-toggle" type="button"
+                                                    id="dropdownMenuButton{{ $inventory->inventoryId }}"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Action
+                                                </button>
+                                                <ul class="dropdown-menu"
+                                                    aria-labelledby="dropdownMenuButton{{ $inventory->inventoryId }}">
+                                                    <li><a class="dropdown-item" href="#"
+                                                            wire:click.prevent="confirmReorder({{ $inventory->inventoryId }})">Re-order</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="#"
+                                                            wire:click.prevent="cancelReorder({{ $inventory->inventoryId }})">Cancel</a>
+                                                    </li>
+                                                </ul>
+                                            @else
+                                                {{ $inventory->status }}
+                                                <span>No Action Needed</span>
+                                            @endif
+                                        </td>
+
+                                    </tr>
                                 @empty
                                     <tr>
                                         <td colspan="10" class="text-center">No inventories found.</td>
@@ -140,8 +138,9 @@
                     </div>
                     <div class="button-group mt-4">
 
-                        <button type="button" class="btn btn-primary" style="margin-right: 10px;" data-bs-toggle="modal"
-                            data-bs-target="#adjustCardModal" wire:click.prevent="viewAdjustItem">Adjust
+                        <button type="button" class="btn btn-primary" style="margin-right: 10px;"
+                            data-bs-toggle="modal" data-bs-target="#adjustCardModal"
+                            wire:click.prevent="viewAdjustItem">Adjust
                             </a>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                 data-bs-target="#stockCardModal" wire:click.prevent="viewStockCard">View Stock
@@ -170,7 +169,8 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
-                                <select name="" id="" class="form-select " wire:model="selectedItemAdjustment">
+                                <select name="" id="" class="form-select "
+                                    wire:model="selectedItemAdjustment">
 
                                     <option value="">Select Item</option>
                                     @foreach ($inventories as $inventory)
@@ -210,7 +210,8 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" wire:click="closeStockModal">Close</button>
+                            <button type="button" class="btn btn-secondary"
+                                wire:click="closeStockModal">Close</button>
                             <button type="submit" class="btn btn-primary">Save changes</button>
                         </div>
                     </div>
@@ -230,18 +231,20 @@
                         <h5 class="modal-title" id="stockCardModalLabel">Inventory Management > Stock
                             Card</h5>
 
-                        <button type="button" class="btn-close" wire:click="closeStockModal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" wire:click="closeStockModal"
+                            aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
 
                         <div class="container-fluid">
                             <div class="form-group w-25 d-flex">
-                                <select name="selectedItem" id="" class="form-select " wire:model.live="selectedItem">
+                                <select name="selectedItem" id="" class="form-select "
+                                    wire:model.live="selectedItem">
 
                                     <option value="">Select Item</option>
-                                    @foreach ($inventories as $inventory)
-                                        <option value="{{ $inventory->inventoryId }}">
-                                            {{ $inventory->batch  }}
+                                    @foreach ($items as $item)
+                                        <option value="{{ $item->item->itemID}}">
+                                            {{ $item->item->itemName }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -266,36 +269,37 @@
                                     </thead>
                                     <tbody>
                                         @if ($stockCardInventories)
-                                                                    @foreach ($stockCardInventories as $stockCard)
-                                                                                                @php
-                                                                                                    // Initialize quantities
-                                                                                                    $valueIn = 0;
-                                                                                                    $valueOut = 0;
-                                                                                                    $totalQuantityIn = 0;
-                                                                                                    $totalQuantityOut = 0;
+                                            @foreach ($stockCardInventories as $stockCard)
+                                                @php
+                                                    // Initialize quantities
+                                                    $valueIn = 0;
+                                                    $valueOut = 0;
+                                                    $totalQuantityIn = 0;
+                                                    $totalQuantityOut = 0;
 
-                                                                                                    if ($stockCard->Remarks === 'Received') {
-                                                                                                        $totalQuantityIn += $stockCard->Quantity;
-                                                                                                        $valueIn += $stockCard->Quantity * $stockCard->item->unitPrice;
-                                                                                                    } else {
-                                                                                                        $totalQuantityOut += $stockCard->Quantity;
-                                                                                                        $valueOut += $stockCard->Quantity * $stockCard->item->sellingPrice;
-                                                                                                    }
+                                                    if ($stockCard->Remarks === 'Received') {
+                                                        $totalQuantityIn += $stockCard->Quantity;
+                                                        $valueIn += $stockCard->Quantity * $stockCard->item->unitPrice;
+                                                    } else {
+                                                        $totalQuantityOut += $stockCard->Quantity;
+                                                        $valueOut +=
+                                                            $stockCard->Quantity * $stockCard->item->sellingPrice;
+                                                    }
 
-                                                                                                @endphp
-                                                                                                <tr>
-                                                                                                    {{-- <td>{{ $stockCard->inventory->batch }}</td> --}}
-                                                                                                    <td>{{ $stockCard->item->itemName }}</td>
-                                                                                                    <td>{{ \Carbon\Carbon::parse($stockCard->date_received)->format('m/d/Y') }}
-                                                                                                    </td>
-                                                                                                    <td>{{ $totalQuantityIn }}</td>
-                                                                                                    <td>₱ {{ $valueIn }}</td>
-                                                                                                    <td>{{ $totalQuantityOut }}</td>
-                                                                                                    <td>₱ {{ $valueOut }}</td>
+                                                @endphp
+                                                <tr>
+                                                    {{-- <td>{{ $stockCard->inventory->batch }}</td> --}}
+                                                    <td>{{ $stockCard->inventory->batch }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($stockCard->date_received)->format('m/d/Y') }}
+                                                    </td>
+                                                    <td>{{ $totalQuantityIn }}</td>
+                                                    <td>₱ {{ $valueIn }}</td>
+                                                    <td>{{ $totalQuantityOut }}</td>
+                                                    <td>₱ {{ $valueOut }}</td>
 
-                                                                                                    <td>{{ $stockCard->Remarks }}</td>
-                                                                                                </tr>
-                                                                    @endforeach
+                                                    <td>{{ $stockCard->Remarks }}</td>
+                                                </tr>
+                                            @endforeach
                                         @endif
 
 
@@ -331,7 +335,7 @@
             // Auto-hide the toast after 2 seconds
             var toastElement = document.querySelector('.toast');
             var toast = new bootstrap.Toast(toastElement); // Initialize Bootstrap toast
-            setTimeout(function () {
+            setTimeout(function() {
                 toast.hide(); // Use Bootstrap method to hide the toast
             }, 2000);
         </script>

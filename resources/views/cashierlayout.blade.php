@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
     <meta name="robots" content="noindex, nofollow">
-    
+
     <title>MG Mini Mart | @yield('title')</title>
     <link rel="shortcut icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" type="image/x-icon">
     <!-- Bootstrap and Core Styles -->
@@ -67,22 +67,22 @@
                           <div data-i18n="Analytics">Dashboard</div>
                       </a>
                   </li>
-                  <!-- Item Management -->
+                  {{-- <!-- Item Management -->
                   <li class="menu-item">
                       <a href="/salereturn" class="menu-link" data-url="/item_management">
-                      
+
                         <i class='menu-icon tf-icons bx bx-recycle'></i>
                           <div data-i18n="Item Management">Sale Return</div>
                       </a>
-                  </li>
+                  </li> --}}
                   <li class="menu-item">
                     <a href="/saletransaction" class="menu-link" data-url="/item_management">
                         <i class='menu-icon tf-icons bx bx-receipt'></i>
-             
+
                         <div data-i18n="Item Management">Sale Transaction</div>
                     </a>
                 </li>
-                  <!-- Logout -->
+                  {{-- <!-- Logout -->
                   <li class="menu-item">
                     <form id="logout-form" action="/logout" method="POST" style="display: none;">
                         @csrf <!-- Include CSRF token for Laravel -->
@@ -91,7 +91,7 @@
                         <i class="menu-icon tf-icons bx bx-power-off"></i>
                         <div data-i18n="Logout">Logout</div>
                     </a>
-                </li>
+                </li> --}}
                 </ul>
             </aside>
             <!-- /Menu -->
@@ -112,10 +112,10 @@
                       <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                         <div class="avatar avatar-online">
                           <!-- Display the avatar from the session -->
-                          <img src="{{ auth()->user()->avatar ? asset('assets/img/avatars/' . auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}" 
-                          alt="User Avatar" 
+                          <img src="{{ auth()->user()->avatar ? asset('assets/img/avatars/' . auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}"
+                          alt="User Avatar"
                           class="rounded-circle custom-avatar-size" />
-                     
+
                         </div>
                       </a>
                       <ul class="dropdown-menu dropdown-menu-end">
@@ -124,11 +124,11 @@
                             <div class="d-flex">
                               <div class="flex-shrink-0 me-3">
                                 <div class="avatar avatar-online">
-                                  
-                                    <img src="{{ auth()->user()->avatar ? asset('assets/img/avatars/' . auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}" 
-                                    alt="User Avatar" 
+
+                                    <img src="{{ auth()->user()->avatar ? asset('assets/img/avatars/' . auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}"
+                                    alt="User Avatar"
                                     class="rounded-circle custom-avatar-size" />
-                               
+
                                 </div>
                               </div>
                               <div class="flex-grow-1">
@@ -166,13 +166,13 @@
     <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-    
+
     <!-- Main JS -->
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script>
   $(document).ready(function() {
     var currentUrl = window.location.pathname; // Get the current URL path
-    
+
     // Highlight the active menu item
     $('.menu-link').each(function() {
         var menuUrl = $(this).data('url');
@@ -205,7 +205,7 @@
     });
 });
   </script>
- 
+
     @yield('scripts')
 </body>
 

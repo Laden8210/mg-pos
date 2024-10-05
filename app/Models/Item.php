@@ -21,6 +21,7 @@ class Item extends Model
         'sellingPrice',
         'status',
         'vatApplicable',
+        'isVatable'
     ];
 
     // Relationship to Inventory

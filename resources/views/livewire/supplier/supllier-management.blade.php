@@ -29,7 +29,7 @@
                                     <th>Contact No.</th>
                                     <th>Address</th>
                                     <th>Status</th>
-                                    <th>Items</th>
+
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -47,11 +47,7 @@
                                             <span
                                                 class="badges {{ $supplier->Status == 1 ? 'bg-lightgreen' : 'bg-lightyellow' }}">{{ $supplier->Status == 0 ? 'Inactive' : 'Active' }}</span>
                                         </td>
-                                        <td>
-                                            <a class="me-3" onclick="launchModal()">
-                                                <img src="{{ asset('img/icons/product.svg') }}" alt="img">
-                                            </a>
-                                        </td>
+
                                         <td>
                                             <button type="button" class="btn btn-primary btn-sm"
                                                 data-bs-target="#updateModal" data-bs-toggle="modal"

@@ -156,19 +156,29 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($inventoryDetails as $item)
-                                            <tr>
-                                                <td>{{ $item->item->barcode }}</td>
-                                                <td>{{ $item->itemID }}</td>
-                                                <td>{{ $item->item->itemName }}</td>
-                                                <td>P {{ number_format($item->item->unitPrice, 2) }}</td>
-                                                <td>{{ $item->qtyonhand }}</td>
-                                                <td>
-                                                    <button wire:click="addToCart({{ $item->inventoryId }})"
-                                                        class="btn btn-success btn-sm">Add to Count</button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
+                                        @php
+                                        $groupedItems = $inventoryDetails->groupBy('itemID');
+                                    @endphp
+
+                                    @foreach ($groupedItems as $itemID => $items)
+                                        @php
+                                            // Calculate the total quantity and get the first item's details for display
+                                            $totalQty = $items->sum('qtyonhand');
+                                            $firstItem = $items->first();
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $firstItem->item->barcode }}</td>
+                                            <td>{{ $itemID }}</td>
+                                            <td>{{ $firstItem->item->itemName }}</td>
+                                            <td>P {{ number_format($firstItem->item->unitPrice, 2) }}</td>
+                                            <td>{{ $totalQty }}</td>
+                                            <td>
+                                                <button wire:click="addToCart({{ $firstItem->item->itemID }})"
+                                                    class="btn btn-success btn-sm">Add to Count</button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+
                                     </tbody>
                                 </table>
                             </div>

@@ -61,48 +61,50 @@ class SaleTransaction extends Component
             $this->scanProduct();
         }
     }
-
     public function scanProduct()
     {
-
+        // Find all inventory records for the scanned product by barcode
         $item = Inventory::with('item')
             ->when($this->barcode, function ($query) {
                 $query->whereHas('item', function ($q) {
                     $q->where('barcode', $this->barcode);
                 });
-            })->first();
+            })
+            ->first();
 
         $this->oldBarcode = $this->barcode;
+
 
         if (!$item) {
             session()->flash('error', 'Item not found.');
             sleep(1);
             $this->barcode = "";
-
             return;
         }
 
-        if ($item->qtyonhand <= 0) {
+        // Sum qtyonhand for all related inventory records
+        $totalQtyOnHand = Inventory::where('itemID', $item->itemID)->sum('qtyonhand');
+
+
+        if ($totalQtyOnHand <= 0) {
             session()->flash('error', 'Item is out of stock.');
             $this->barcode = "";
-
             return;
         }
 
         // Check if item is already in the cart
-        if (isset($this->cart[$item->itemId])) {
-            if ($this->cart[$item->itemId]['quantity'] < $item->qtyonhand) {
-                $this->cart[$item->itemId]['quantity']++;
-                $this->cart[$item->itemId]['subtotal'] = $this->cart[$item->itemId]['quantity'] * $this->cart[$item->itemId]['price'];
+        if (isset($this->cart[$item->itemID])) {
+            if ($this->cart[$item->itemID]['quantity'] < $totalQtyOnHand) {
+                $this->cart[$item->itemID]['quantity']++;
+                $this->cart[$item->itemID]['subtotal'] = $this->cart[$item->itemID]['quantity'] * $this->cart[$item->itemID]['price'];
             } else {
                 session()->flash('error', 'Not enough stock available.');
                 $this->barcode = "";
-
                 return;
             }
         } else {
             // Add new item to cart
-            $this->cart[$item->itemId] = [
+            $this->cart[$item->itemID] = [
                 'id' => $item->itemID,
                 'name' => $item->item->itemName,
                 'price' => $item->item->unitPrice,
@@ -118,30 +120,47 @@ class SaleTransaction extends Component
         $this->calculateTotals();
     }
 
+
     public function addToCart($itemId)
     {
-        $item = Inventory::with('item')->find($itemId);
+        // Retrieve the inventory item with the related item
+        $item = Inventory::with('item')
+        ->where('itemID', $itemId) // Directly filter by itemID
+        ->first();
 
+
+        // Check if the item was found
         if (!$item) {
             session()->flash('error', 'Item not found.');
+            sleep(1);
+            $this->barcode = ""; // Clear barcode input
             return;
         }
 
-        if ($item->qtyonhand <= 0) {
+        // Sum qtyonhand for all related inventory records
+        $totalQtyOnHand = Inventory::where('itemID', $item->itemID)->sum('qtyonhand');
+
+        // Check if the item is out of stock
+        if ($totalQtyOnHand <= 0) {
             session()->flash('error', 'Item is out of stock.');
+            $this->barcode = ""; // Clear barcode input
             return;
         }
 
-        // Check if item is already in the cart
-        if (isset($this->cart[$itemId])) {
-            if ($this->cart[$itemId]['quantity'] < $item->qtyonhand) {
-                $this->cart[$itemId]['quantity']++;
+        // Check if the item is already in the cart
+        if (isset($this->cart[$item->itemID])) {
+            // Check if there's enough stock available to add to the cart
+            if ($this->cart[$item->itemID]['quantity'] < $totalQtyOnHand) {
+                $this->cart[$item->itemID]['quantity']++;
+                $this->cart[$item->itemID]['subtotal'] = $this->cart[$item->itemID]['quantity'] * $this->cart[$item->itemID]['price'];
             } else {
                 session()->flash('error', 'Not enough stock available.');
+                $this->barcode = ""; // Clear barcode input
                 return;
             }
         } else {
-            $this->cart[$itemId] = [
+            // Add new item to the cart
+            $this->cart[$item->itemID] = [
                 'id' => $item->itemID,
                 'name' => $item->item->itemName,
                 'price' => $item->item->unitPrice,
@@ -150,10 +169,10 @@ class SaleTransaction extends Component
             ];
         }
 
-        // Update inventory quantity
+        // Clear the barcode input field
+        $this->barcode = "";
 
-        $item->save();
-
+        // Recalculate totals for the cart
         $this->calculateTotals();
         $this->updateCartSubtotal();
     }
@@ -205,7 +224,6 @@ class SaleTransaction extends Component
             'change' => $this->change,
             $this->resetTransaction()
         ]);
-
     }
     protected function storeTransaction()
     {
@@ -353,7 +371,6 @@ class SaleTransaction extends Component
         } else {
             session()->flash('error', 'Invalid discount percentage.');
         }
-
     }
 
     public function updateAmountTendered($amount)
